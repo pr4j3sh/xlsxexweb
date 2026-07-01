@@ -2,6 +2,12 @@
 
 `xlsx` web extractor
 
+- install deps
+
+```bash
+npm i
+```
+
 - start browser
 
 ```bash
