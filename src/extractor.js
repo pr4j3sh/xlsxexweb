@@ -4,8 +4,6 @@ async function readExcel(filePath, sheetName = "Sheet1", idColumn = "A") {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(filePath);
 
-  console.log({ workbook: workbook.worksheets.map((ws) => ws.name) });
-
   let worksheet = workbook.getWorksheet(sheetName);
 
   if (!worksheet) {
