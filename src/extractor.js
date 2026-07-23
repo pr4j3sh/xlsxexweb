@@ -1,8 +1,12 @@
 const ExcelJS = require("exceljs");
 
-async function readExcel(filePath, sheetName = 1, idColumn = "A") {
+async function readExcel(filePath, sheetName = "Sheet1", idColumn = "A") {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(filePath);
+
+  console.log({ workbook: workbook.worksheets.map((ws) => ws.name) });
+  sheetName = workbook.worksheets[0].name;
+  console.log(`Reading sheet: ${sheetName} from file: ${filePath}`);
 
   const worksheet =
     typeof sheetName === "number"
