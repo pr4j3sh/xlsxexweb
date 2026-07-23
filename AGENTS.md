@@ -23,6 +23,7 @@ No other commands. No tests, no lint, no build step.
 - **`index.js`** — entry point. Orchestrates read → scrape loop → write.
 - **`src/cli.js`** — parses `--sheet` and `--column` from `process.argv`. Returns `{ sheet, column }`.
 - **`src/extractor.js`** — reads IDs from the given sheet of an Excel file, skips the header row. Falls back to the first worksheet if the given name isn't found.
+- **`src/progress.js`** — wraps `cli-progress` for a live progress bar during the scrape loop.
 - **`src/scraper.js`** — Playwright CDP automation. Connects to the open browser on `localhost:9222`, takes the first tab, fills `#emp_code`, clicks `#btnSbmt`, waits for `#example` DataTable rows.
 - **`src/writer.js`** — writes results array to Excel.
 
@@ -31,5 +32,6 @@ No other commands. No tests, no lint, no build step.
 - **Playwright** uses `chromium.connectOverCDP` to attach to an existing browser session — no browser is launched.
 - **CommonJS** (`"type": "commonjs"` in package.json).
 - **ExcelJS** for both reading and writing `.xlsx` files.
+- **cli-progress** for the live progress bar during the scrape loop.
 - The scraper assumes a specific page DOM (`#emp_code`, `#btnSbmt`, `#example` DataTable). If the target site changes these selectors, `src/scraper.js` breaks.
 - Input and output Excel files are gitignored (`*.xlsx` in `.gitignore`).

@@ -4,6 +4,11 @@ const { parseArgs } = require("./src/cli");
 const { readExcel } = require("./src/extractor");
 const { searchBeneficiary } = require("./src/scraper");
 const { writeExcel } = require("./src/writer");
+const {
+  startProgress,
+  updateProgress,
+  stopProgress,
+} = require("./src/progress");
 
 async function main() {
   const { sheet, column } = parseArgs();
@@ -14,55 +19,53 @@ async function main() {
   const page = browser.contexts()[0].pages()[0];
 
   const results = [];
-
+  const errors = [];
   const total = ids.length;
+
+  startProgress(total);
 
   for (let i = 0; i < total; i++) {
     const id = ids[i];
-
-    console.log("======================================");
-    console.log(`Processing : ${i + 1}/${total}`);
-    console.log(`Remaining  : ${total - i - 1}`);
-    console.log(`Searching  : ${id}`);
+    let status;
 
     try {
       const result = await searchBeneficiary(page, id);
 
       if (result.rows.length === 0) {
-        console.log("No records found.");
-
-        results.push({
-          searchId: id,
-          found: false,
-        });
+        status = "no data";
+        results.push({ searchId: id, found: false });
       } else {
-        console.log(`${result.rows.length} record(s) found.`);
-
+        status = `${result.rows.length} found`;
         for (const row of result.rows) {
-          results.push({
-            searchId: id,
-            found: true,
-            ...row,
-          });
+          results.push({ searchId: id, found: true, ...row });
         }
       }
     } catch (err) {
-      console.error(`Failed: ${id}`);
-      console.error(err.message);
+      status = "error";
+      errors.push({ id, message: err.message });
+      results.push({ searchId: id, found: "ERROR", error: err.message });
+    }
 
-      results.push({
-        searchId: id,
-        found: "ERROR",
-        error: err.message,
-      });
+    updateProgress(i + 1, id, status);
+  }
+
+  stopProgress();
+
+  if (errors.length > 0) {
+    console.log("\nErrors:");
+    for (const { id, message } of errors) {
+      console.log(`  ${id}: ${message}`);
     }
   }
 
-  console.log("--------------------------------------");
+  const found = results.filter((r) => r.found === true).length;
+  const notFound = results.filter((r) => r.found === false).length;
+  console.log(
+    `\nSummary: ${total} processed, ${found} found, ${notFound} not found, ${errors.length} errors`
+  );
+
   console.log("Writing Excel...");
-
   await writeExcel("./data/output/result.xlsx", results);
-
   console.log("Done.");
 }
 
