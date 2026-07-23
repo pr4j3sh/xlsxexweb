@@ -5,13 +5,16 @@ async function readExcel(filePath, sheetName = "Sheet1", idColumn = "A") {
   await workbook.xlsx.readFile(filePath);
 
   console.log({ workbook: workbook.worksheets.map((ws) => ws.name) });
-  sheetName = workbook.worksheets[0].name;
-  console.log(`Reading sheet: ${sheetName} from file: ${filePath}`);
 
-  const worksheet =
-    typeof sheetName === "number"
-      ? workbook.getWorksheet(sheetName)
-      : workbook.getWorksheet(sheetName);
+  let worksheet = workbook.getWorksheet(sheetName);
+
+  if (!worksheet) {
+    console.log(`Sheet "${sheetName}" not found, falling back to first sheet.`);
+    worksheet = workbook.worksheets[0];
+  }
+
+  const actualSheetName = worksheet.name;
+  console.log(`Reading sheet: ${actualSheetName} from file: ${filePath}`);
 
   if (!worksheet) {
     throw new Error("Worksheet not found");
